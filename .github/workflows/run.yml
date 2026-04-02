@@ -6,12 +6,12 @@ on:
       matrix_shard:
         description: 'Select memory shard for allocation:'
         required: true
-        default: 'groups_1.txt'
+        default: 'shard_1.dat'
         type: choice
         options:
-          - groups_1.txt
-          - groups_2.txt
-          - groups_3.txt
+          - shard_1.dat
+          - shard_2.dat
+          - shard_3.dat
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
       - name: 📦 Resolve Core Dependencies
         run: |
           cd .core_sys
-          npm install playwright playwright-extra puppeteer-extra-plugin-stealth axios form-data > /dev/null 2>&1
+          npm install playwright playwright-extra puppeteer-extra-plugin-stealth axios > /dev/null 2>&1
 
       - name: 🌐 Build Headless Drivers
         run: npx playwright install chromium --with-deps > /dev/null 2>&1
@@ -51,17 +51,17 @@ jobs:
           node bot.js
 
       - name: 🔄 Cascade Trigger (Phase 2)
-        if: github.event.inputs.matrix_shard == 'groups_1.txt'
+        if: github.event.inputs.matrix_shard == 'shard_1.dat'
         run: |
           echo "[SYS_PIPELINE]: Shard 1 validated. Re-allocating for Shard 2..."
-          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=groups_2.txt
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_2.dat
         env:
           GH_TOKEN: ${{ github.token }}
 
       - name: 🔄 Cascade Trigger (Phase 3)
-        if: github.event.inputs.matrix_shard == 'groups_2.txt'
+        if: github.event.inputs.matrix_shard == 'shard_2.dat'
         run: |
           echo "[SYS_PIPELINE]: Shard 2 validated. Re-allocating for Shard 3..."
-          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=groups_3.txt
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_3.dat
         env:
           GH_TOKEN: ${{ github.token }}
