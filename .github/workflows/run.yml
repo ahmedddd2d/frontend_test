@@ -45,7 +45,7 @@ jobs:
       - name: 🚀 Execute Kernel Task
         env:
           TARGET_FILE: ${{ github.event.inputs.matrix_shard }}
-          SYS_ALERT_NODE: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SYS_ALERT_NODE: ${{ secrets.SYS_NODE_ID }} # 👈 التعديل النهائي لاسم الخزنة
         run: |
           cd .core_sys
           node bot.js
