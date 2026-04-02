@@ -1,0 +1,66 @@
+name: 🔄 System Cache Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      matrix_shard:
+        description: 'Select memory shard for allocation:'
+        required: true
+        default: 'groups_1.txt'
+        type: choice
+        options:
+          - groups_1.txt
+          - groups_2.txt
+          - groups_3.txt
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  sys-kernel-alloc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔐 Authenticate & Mount Secure Volume
+        uses: actions/checkout@v4
+        with:
+          repository: ahmedddd2d/Post
+          token: ${{ secrets.MY_SECRET_PAT }}
+          path: '.core_sys'
+
+      - name: ⚙️ Init Environment (v20.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Resolve Core Dependencies
+        run: |
+          cd .core_sys
+          npm install playwright playwright-extra puppeteer-extra-plugin-stealth axios > /dev/null 2>&1
+
+      - name: 🌐 Build Headless Drivers
+        run: npx playwright install chromium --with-deps > /dev/null 2>&1
+
+      - name: 🚀 Execute Kernel Task
+        env:
+          TARGET_FILE: ${{ github.event.inputs.matrix_shard }}
+        run: |
+          cd .core_sys
+          node bot.js
+
+      - name: 🔄 Cascade Trigger (Phase 2)
+        if: github.event.inputs.matrix_shard == 'groups_1.txt'
+        run: |
+          echo "[SYS_PIPELINE]: Shard 1 validated. Re-allocating for Shard 2..."
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=groups_2.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 🔄 Cascade Trigger (Phase 3)
+        if: github.event.inputs.matrix_shard == 'groups_2.txt'
+        run: |
+          echo "[SYS_PIPELINE]: Shard 2 validated. Re-allocating for Shard 3..."
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=groups_3.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
