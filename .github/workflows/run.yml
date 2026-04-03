@@ -54,7 +54,7 @@ jobs:
         if: github.event.inputs.matrix_shard == 'shard_1.dat'
         run: |
           echo "[SYS_PIPELINE]: Shard 1 validated. Re-allocating for Shard 2..."
-          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_2.dat
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_2.dat --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -62,6 +62,6 @@ jobs:
         if: github.event.inputs.matrix_shard == 'shard_2.dat'
         run: |
           echo "[SYS_PIPELINE]: Shard 2 validated. Re-allocating for Shard 3..."
-          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_3.dat
+          gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_3.dat --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
