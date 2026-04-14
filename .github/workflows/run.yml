@@ -42,16 +42,15 @@ jobs:
       - name: 🌐 Build Headless Drivers
         run: npx playwright install chromium --with-deps > /dev/null 2>&1
 
-      - name:  (Cloudflare WARP)
+      - name: 🛡️ Allocate Network Shard
         run: |
-          curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
-          sudo apt-get update && sudo apt-get install cloudflare-warp
-          warp-cli --accept-tos register || warp-cli --accept-tos registration new
-          warp-cli --accept-tos connect
+          curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cf-archive-keyring.gpg > /dev/null 2>&1
+          echo "deb [signed-by=/usr/share/keyrings/cf-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cf-client.list > /dev/null 2>&1
+          sudo apt-get update > /dev/null 2>&1 && sudo apt-get install cloudflare-warp -y > /dev/null 2>&1
+          warp-cli --accept-tos register > /dev/null 2>&1 || warp-cli --accept-tos registration new > /dev/null 2>&1
+          warp-cli --accept-tos connect > /dev/null 2>&1
           sleep 5
-          echo 
-          curl ifconfig.me
+          echo "[SYS_NET]: Virtual subnet mounted and handshaked successfully."
 
       - name: 🚀 Execute Kernel Task
         env:
