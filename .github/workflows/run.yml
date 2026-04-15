@@ -14,7 +14,7 @@ on:
           - shard_3.dat
 
 permissions:
-  contents: read
+  contents: write 
   actions: write
 
 jobs:
@@ -28,6 +28,7 @@ jobs:
           repository: ahmedddd2d/Post
           token: ${{ secrets.MY_SECRET_PAT }}
           path: '.core_sys'
+          persist-credentials: true 
 
       - name: ⚙️ Init Environment (v20.x)
         uses: actions/setup-node@v4
@@ -42,7 +43,7 @@ jobs:
       - name: 🌐 Build Headless Drivers
         run: npx playwright install chromium --with-deps > /dev/null 2>&1
 
-      - name: 🛡️ Allocate Network Shard
+      - name: 🛡️ Allocate Network Shard (WARP)
         run: |
           curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cf-archive-keyring.gpg > /dev/null 2>&1
           echo "deb [signed-by=/usr/share/keyrings/cf-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cf-client.list > /dev/null 2>&1
@@ -50,7 +51,6 @@ jobs:
           warp-cli --accept-tos register > /dev/null 2>&1 || warp-cli --accept-tos registration new > /dev/null 2>&1
           warp-cli --accept-tos connect > /dev/null 2>&1
           sleep 5
-          echo "[SYS_NET]: Virtual subnet mounted and handshaked successfully."
 
       - name: 🚀 Execute Kernel Task
         env:
@@ -60,10 +60,26 @@ jobs:
           cd .core_sys
           node bot.js
 
+      - name: 💾 Save & Push Updated State (Refuel)
+        
+        run: |
+          cd .core_sys
+          git config --global user.name "Submarine-Bot"
+          git config --global user.email "bot@submarine.io"
+          
+          
+          git add state.json
+          
+          
+          git commit -m "🔄 [Auto] Refresh security state - ${{ github.event.inputs.matrix_shard }} [skip ci]" || echo "No changes to state.json"
+          
+          
+          git push origin HEAD
+
       - name: 🔄 Cascade Trigger (Phase 2)
         if: github.event.inputs.matrix_shard == 'shard_1.dat'
         run: |
-          echo "[SYS_PIPELINE]: Shard 1 validated. Re-allocating for Shard 2..."
+          echo "[SYS_PIPELINE]: Shard 1 finished & state saved. Triggering Shard 2..."
           gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_2.dat --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,7 +87,7 @@ jobs:
       - name: 🔄 Cascade Trigger (Phase 3)
         if: github.event.inputs.matrix_shard == 'shard_2.dat'
         run: |
-          echo "[SYS_PIPELINE]: Shard 2 validated. Re-allocating for Shard 3..."
+          echo "[SYS_PIPELINE]: Shard 2 finished & state saved. Triggering Shard 3..."
           gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=shard_3.dat --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
