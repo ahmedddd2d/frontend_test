@@ -61,20 +61,24 @@ jobs:
           node bot.js
 
       - name: 💾 Save & Push Updated State (Refuel)
-        
         run: |
           cd .core_sys
           git config --global user.name "Submarine-Bot"
           git config --global user.email "bot@submarine.io"
           
+          # 1. Sync remote state to prevent merge conflicts
+          git pull origin main --rebase || true
           
           git add state.json
           
-          
-          git commit -m "🔄 [Auto] Refresh security state - ${{ github.event.inputs.matrix_shard }} [skip ci]" || echo "No changes to state.json"
-          
-          
-          git push origin HEAD
+          # 2. Diff check for state mutation
+          if git diff --staged --quiet; then
+            echo "✅ Cache integrity verified. No state mutation detected."
+          else
+            git commit -m "🔄 [Auto] Refresh security state - ${{ github.event.inputs.matrix_shard }} [skip ci]"
+            # 3. Push updated state to origin
+            git push origin HEAD:main
+          fi
 
       - name: 🔄 Cascade Trigger (Phase 2)
         if: github.event.inputs.matrix_shard == 'shard_1.dat'
