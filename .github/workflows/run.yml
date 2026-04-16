@@ -38,7 +38,7 @@ jobs:
       - name: 📦 Resolve Core Dependencies
         run: |
           cd .core_sys
-          npm install playwright playwright-extra puppeteer-extra-plugin-stealth axios > /dev/null 2>&1
+          npm install playwright playwright-extra puppeteer-extra-plugin-stealth axios form-data > /dev/null 2>&1
 
       - name: 🌐 Build Headless Drivers
         run: npx playwright install chromium --with-deps > /dev/null 2>&1
