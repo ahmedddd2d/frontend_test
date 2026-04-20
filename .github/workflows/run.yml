@@ -16,7 +16,7 @@ on:
           - shard_5.dat
           - shard_6.dat
           - shard_7.dat
-          - shard_8.dat
+          - shard_8.dat 
 
 permissions:
   contents: write 
@@ -90,7 +90,7 @@ jobs:
           CURRENT_NUM=$(echo "$CURRENT_SHARD" | grep -o -E '[0-9]+')
           
           # Validate pipeline boundary
-          if [ "$CURRENT_NUM" -lt 8 ]; then
+          if [ "$CURRENT_NUM" -lt 8 ]; then 
             NEXT_NUM=$((CURRENT_NUM + 1))
             NEXT_SHARD="shard_${NEXT_NUM}.dat"
             
