@@ -81,34 +81,73 @@ jobs:
             echo "✅ Cache integrity verified. No state mutation detected."
           fi
 
-      - name: 🔄 Smart Cascade Trigger (With Jitter Delay)
+      - name: 🔄 Smart Cascade Trigger (Skewed Long Delay)
+
         env:
+
           GH_TOKEN: ${{ github.token }}
+
           CURRENT_SHARD: ${{ github.event.inputs.matrix_shard }}
+
         run: |
+
           # Extract current sequence index
+
           CURRENT_NUM=$(echo "$CURRENT_SHARD" | grep -o -E '[0-9]+')
+
           
+
           # Validate pipeline boundary
+
           if [ "$CURRENT_NUM" -lt 8 ]; then 
+
             NEXT_NUM=$((CURRENT_NUM + 1))
+
             NEXT_SHARD="shard_${NEXT_NUM}.dat"
+
             
-            # Determine cache synchronization delay
-            SHOULD_DELAY=$((RANDOM % 2))
+
+            MIN_DELAY=1200
+
             
-            if [ "$SHOULD_DELAY" -eq 1 ]; then
-              # Calculate jitter window (900s - 1800s)
-              DELAY_SECONDS=$((900 + RANDOM % 901))
-              DELAY_MINS=$((DELAY_SECONDS / 60))
-              echo "[SYS_PIPELINE]: Stage $CURRENT_NUM complete. Allocating $DELAY_MINS minutes for sync before initiating $NEXT_SHARD..."
-              sleep $DELAY_SECONDS
+
+            MAX_RANGE=1801
+
+            
+
+            R1=$((RANDOM % MAX_RANGE))
+
+            R2=$((RANDOM % MAX_RANGE))
+
+            
+
+            if [ "$R1" -gt "$R2" ]; then
+
+              SKEWED_RAND=$R1
+
             else
-              echo "[SYS_PIPELINE]: Stage $CURRENT_NUM complete. Initiating $NEXT_SHARD immediately..."
+
+              SKEWED_RAND=$R2
+
             fi
+
+
+            DELAY_SECONDS=$((MIN_DELAY + SKEWED_RAND))
+
+            DELAY_MINS=$((DELAY_SECONDS / 60))
+
             
+
+            echo "[SYS_PIPELINE]: Stage $CURRENT_NUM complete. Allocating $DELAY_MINS minutes (skewed long) before initiating $NEXT_SHARD..."
+
+            sleep $DELAY_SECONDS
+
+            
+
             # Execute next pipeline stage
+
             gh workflow run "🔄 System Cache Pipeline" -f matrix_shard=$NEXT_SHARD --repo ${{ github.repository }}
+
           else
             echo "✅ Pipeline sequence complete. Reached terminal shard ($CURRENT_SHARD)."
           fi
