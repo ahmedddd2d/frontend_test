@@ -92,7 +92,7 @@ jobs:
             NEXT_NUM=$((CURRENT_NUM + 1))
             NEXT_SHARD="shard_${NEXT_NUM}.dat"
             
-            SYNC_BASE=1200
+            SYNC_BASE=1800
             REPL_VARIANCE=1801
             
             V1=$((RANDOM % REPL_VARIANCE))
