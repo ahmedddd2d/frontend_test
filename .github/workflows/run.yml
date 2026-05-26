@@ -6,11 +6,16 @@ on:
       matrix_shard:
         description: 'Select memory shard for allocation:'
         required: true
-        default: 'shard_7.dat'
+        default: 'shard_1.dat'
         type: choice
         options:
         
-          
+          - shard_1.dat
+          - shard_2.dat
+          - shard_3.dat
+          - shard_4.dat
+          - shard_5.dat
+          - shard_6.dat
           - shard_7.dat
           - shard_8.dat 
 
