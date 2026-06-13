@@ -9,7 +9,6 @@ on:
         default: 'shard_1.dat'
         type: choice
         options:
-        
           - shard_1.dat
           - shard_2.dat
           - shard_3.dat
@@ -58,13 +57,18 @@ jobs:
           warp-cli --accept-tos connect > /dev/null 2>&1
           sleep 5
 
+      - name: 📺 Virtualize Virtual Core Display Buffer (Xvfb)
+        run: |
+          sudo apt-get update > /dev/null 2>&1
+          sudo apt-get install -y xvfb > /dev/null 2>&1
+
       - name: 🚀 Execute Kernel Task
         env:
           TARGET_FILE: ${{ github.event.inputs.matrix_shard }}
           SYS_ALERT_NODE: ${{ secrets.SYS_NODE_ID }}
         run: |
           cd .core_sys
-          node bot.js
+          xvfb-run --auto-servernum --server-args="-screen 0 1366x768x24" node bot.js
 
       - name: 💾 Save & Push Updated State (Refuel)
         run: |
